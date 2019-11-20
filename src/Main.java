@@ -19,6 +19,7 @@ public class Main {
     private final static String linksFilePath = jsonsFolderPath + "jsonLinks.json";
     private final static String picturesFilePath = jsonsFolderPath + "jsonPictures.json";
     private final static String lockFilePath = jsonsFolderPath + "isBusy";
+    private final static String dbPropertiesPath = "/home/user/IntelliJProjects/DBDaemonManager/db.properties";
     private final static String[] threadNames = {"TextsThread", "LinksThread", "PicturesThread"};
     private final static String[] filesPaths = {textsFilePath, linksFilePath, picturesFilePath};
     private final static String[] dbColumns = {"Texts", "Links", "Pictures"};
@@ -35,8 +36,7 @@ public class Main {
     private static MysqlDataSource getConnectionData() throws IOException {
         Properties props = new Properties();
 
-        String fileName = "./db.properties";
-        props.load(new FileInputStream(fileName));
+        props.load(new FileInputStream(dbPropertiesPath));
 
         MysqlDataSource ds = new MysqlDataSource();
         ds.setURL(props.getProperty("db.url"));
@@ -92,7 +92,12 @@ public class Main {
                     }
 
             } catch (IOException | ParseException | SQLException e) {
-                e.printStackTrace();
+                try {
+                    FileWriter fr = new FileWriter("/home/user/IntelliJProjects/DBDaemonManager/erros.txt");
+                    fr.write(e.getMessage());
+                } catch (IOException ex) {
+                    ex.printStackTrace();
+                }
             }
         }
 
@@ -109,7 +114,7 @@ public class Main {
                 isOccupied = (fr.read() == '1');
                 fr.close();
                 if (isOccupied)
-                    Thread.sleep(1000);
+                    Thread.sleep(100);
             }
             // Occupy the file
             FileWriter fr = new FileWriter(lockFilePath);
